@@ -1,24 +1,25 @@
+
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    // Criação de variáveis
 
-    // rotação da câmera
+
+    //Controles de Camera
     public float mouseSensitivity = 2f;
     private float verticalRotation = 0f;
     private Transform cameraTransform;
 
-    // Movimento no chão
+    //Movimento no ChÃ£o
     private Rigidbody rb;
     public float MoveSpeed = 5f;
     private float moveHorizontal;
     private float moveForward;
 
-    //Pular
+    //Pulando
     public float jumpForce = 10f;
-    public float fallMultiplier = 2.5f; // multiplica a gravidade quando estiver caindo
-    public float ascendMultiplier = 2f; //multiplica  a gravidade no momento que estiver na altura maxima do pulo
+    public float fallMultiplier = 2.5f;
+    public float ascendMultiplier =2f;
     private bool isGrounded = true;
     public LayerMask groundLayer;
     private float groundCheckTimer = 0f;
@@ -29,21 +30,21 @@ public class PlayerMovement : MonoBehaviour
 
     void Start()
     {
+        Debug.Log("Iniciando Teste de Movimento");
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
         cameraTransform = Camera.main.transform;
 
-        playerHeight = GetComponent<CapsuleCollider>().height * cameraTransform.localScale.y;
-        raycastDistance = (playerHeight / 2) + 0.2f;
+        playerHeight = GetComponent<CapsuleCollider>().height * 
+        transform.localScale.y;
+        raycastDistance = (playerHeight/2) + 0.2f;
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-
     }
 
     void Update()
     {
-
         moveHorizontal = Input.GetAxisRaw("Horizontal");
         moveForward = Input.GetAxisRaw("Vertical");
 
@@ -54,17 +55,16 @@ public class PlayerMovement : MonoBehaviour
             Jump();
         }
 
-         //  Raycast EVERY frame the player is not grounded
-        if (!isGrounded)
+        // Checking when we're on the ground and keeping track of our ground check delay
+        if (!isGrounded && groundCheckTimer <= 0f)
         {
             Vector3 rayOrigin = transform.position + Vector3.up * 0.1f;
             isGrounded = Physics.Raycast(rayOrigin, Vector3.down, raycastDistance, groundLayer);
-             if(isGrounded){
-                groundCheckTimer = 0f;
-             }
-           
         }
-    
+        else
+        {
+            groundCheckTimer -= Time.deltaTime;
+        }
     }
 
     void FixedUpdate()
@@ -75,15 +75,15 @@ public class PlayerMovement : MonoBehaviour
 
     void MovePlayer()
     {
-        Vector3 movement = (transform.right * moveHorizontal + transform.forward * moveForward).normalized;
+        Vector3 movement =  (transform.right * moveHorizontal + 
+                             transform.forward * moveForward
+                            ).normalized;
         Vector3 targetVelocity = movement * MoveSpeed;
-
 
         Vector3 velocity = rb.linearVelocity;
         velocity.x = targetVelocity.x;
         velocity.z = targetVelocity.z;
         rb.linearVelocity = velocity;
-
 
         if (isGrounded && moveHorizontal == 0 && moveForward == 0)
         {
@@ -99,7 +99,7 @@ public class PlayerMovement : MonoBehaviour
         verticalRotation -= Input.GetAxis("Mouse Y") * mouseSensitivity;
         verticalRotation = Mathf.Clamp(verticalRotation, -90f, 90f);
 
-        cameraTransform.localRotation = Quaternion.Euler(verticalRotation, 0, 0);
+        cameraTransform.localRotation = Quaternion.Euler(verticalRotation,0,0);
     }
 
     void Jump()
@@ -111,13 +111,15 @@ public class PlayerMovement : MonoBehaviour
 
     void ApplyJumpPhysics()
     {
-        if (rb.linearVelocity.y < 0)
+        if(rb.linearVelocity.y < 0)
         {
-            rb.linearVelocity += Vector3.up * Physics.gravity.y * fallMultiplier * Time.fixedDeltaTime;
+            rb.linearVelocity += Vector3.up * Physics.gravity.y * 
+            fallMultiplier * Time.fixedDeltaTime;
         }
         else if (rb.linearVelocity.y > 0)
         {
-            rb.linearVelocity += Vector3.up * Physics.gravity.y * ascendMultiplier * Time.fixedDeltaTime;
+            rb.linearVelocity += Vector3.up * Physics.gravity.y * 
+            ascendMultiplier * Time.fixedDeltaTime;
         }
     }
 }
